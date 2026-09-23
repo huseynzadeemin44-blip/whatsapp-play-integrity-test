@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  redroid:
+    image: redroid/redroid:11.0.0-latest
+    container_name: whatsapp-redroid
+    privileged: true
+    ports:
+      - "5555:5555"
+    volumes:
+      - ./data:/data
+      - ./apkm_extracted:/apk
+      - ./frida:/frida
+    environment:
+      - DISPLAY=:0
+    restart: unless-stopped
+    command: >
+      androidboot.redroid_gpu_mode=guest
