@@ -13,6 +13,9 @@ on:
 jobs:
   analyze-play-integrity:
     runs-on: ubuntu-latest
+
+    env:
+      PHONE: ${{ github.event.inputs.phone_number || '13322549345' }}
     
     steps:
     - name: Checkout code
@@ -37,9 +40,13 @@ jobs:
         echo "Python version: $(python --version)"
         echo "Docker version: $(docker --version)"
         echo "ADB version: $(adb --version | head -1)"
-        echo "Phone: ${{ github.event.inputs.phone_number || '13322549345' }}"
+        echo "Phone: $PHONE"
         echo "==================================="
     
+    - name: Prepare report variables
+      id: vars
+      run: echo "date=$(date)" >> "$GITHUB_OUTPUT"
+
     - name: Analyze WhatsApp APK structure
       run: |
         echo "[*] WhatsApp APK analiz yapısı"
@@ -115,50 +122,50 @@ jobs:
     
     - name: Generate test report
       run: |
-        cat > test_report.txt << 'EOF'
-WhatsApp Play Integrity Test Raporu
-=====================================
+        cat > test_report.txt <<- 'EOF'
+        WhatsApp Play Integrity Test Raporu
+        =====================================
 
-Test Tarihi: $(date)
-Test Numarası: ${{ github.event.inputs.phone_number || '13322549345' }}
+        Test Tarihi: ${{ steps.vars.outputs.date }}
+        Test Numarası: ${{ env.PHONE }}
 
-Analiz Edilen Bileşenler:
---------------------------
-✓ Play Integrity API
-✓ WhatsApp kayıt protokolü
-✓ Token generation mekanizması
-✓ Device fingerprinting
-✓ SMS verification flow
+        Analiz Edilen Bileşenler:
+        --------------------------
+        ✓ Play Integrity API
+        ✓ WhatsApp kayıt protokolü
+        ✓ Token generation mekanizması
+        ✓ Device fingerprinting
+        ✓ SMS verification flow
 
-GitHub Bypass Projeleri:
------------------------
-✓ 5 repo analiz edildi
-✓ 405-16 yıldız arası
-✓ Magisk, Frida, Python toolkit çözümleri
+        GitHub Bypass Projeleri:
+        -----------------------
+        ✓ 5 repo analiz edildi
+        ✓ 405-16 yıldız arası
+        ✓ Magisk, Frida, Python toolkit çözümleri
 
-Bypass Yöntemleri:
-------------------
-1. Magisk + Play Integrity Fix
-   - Root cihazlarda çalışır
-   - Hardware attestation bypass
-   
-2. Frida Hook
-   - Runtime token yakalama
-   - StandardIntegrityManager bypass
-   
-3. Redroid (Docker)
-   - Fiziksel cihaz gerektirmiyor
-   - Test ortamı
+        Bypass Yöntemleri:
+        ------------------
+        1. Magisk + Play Integrity Fix
+           - Root cihazlarda çalışır
+           - Hardware attestation bypass
 
-Sonuç:
-------
-✓ WhatsApp protokolü reverse engineer edildi
-✓ Play Integrity engeli tespit edildi
-✓ 5 bypass yöntemi araştırıldı
-✓ GitHub Actions ile otomatik test başarılı
+        2. Frida Hook
+           - Runtime token yakalama
+           - StandardIntegrityManager bypass
 
-Test tamamlandı! ✓
-EOF
+        3. Redroid (Docker)
+           - Fiziksel cihaz gerektirmiyor
+           - Test ortamı
+
+        Sonuç:
+        ------
+        ✓ WhatsApp protokolü reverse engineer edildi
+        ✓ Play Integrity engeli tespit edildi
+        ✓ 5 bypass yöntemi araştırıldı
+        ✓ GitHub Actions ile otomatik test başarılı
+
+        Test tamamlandı! ✓
+        EOF
         cat test_report.txt
     
     - name: Upload test results
